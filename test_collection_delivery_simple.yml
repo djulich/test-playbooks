@@ -1,0 +1,14 @@
+ ---
+  - name: Simple Test
+    hosts: localhost
+    connection: local
+    gather_facts: false
+    tasks:
+      - name: Use module from vendor collection
+        mytest.verify.hello:
+          name: "Direct Test"
+        register: result
+
+      - name: Display result
+        debug:
+          var: result
