@@ -1,11 +1,16 @@
 ---
 - name: Test Collection Delivery via private_data_dir
   hosts: localhost
+  connection: local  # <-- Add this to avoid SSH
   gather_facts: false
   tasks:
-    - name: Show ANSIBLE_COLLECTIONS_PATHS
+    - name: Show ANSIBLE_COLLECTIONS_PATHS from env
       debug:
         msg: "{{ lookup(\"env\", \"ANSIBLE_COLLECTIONS_PATHS\") }}"
+
+    - name: Show ANSIBLE_COLLECTIONS_PATH (singular) from env
+      debug:
+        msg: "{{ lookup(\"env\", \"ANSIBLE_COLLECTIONS_PATH\") }}"
 
     - name: List /runner directory
       command: ls -la /runner/
@@ -25,13 +30,14 @@
         var: vendor_stat
 
     - name: List vendor_collections if it exists
-      command: ls -la /runner/vendor_collections/
-      register: vendor_ls
+      command: find /runner/vendor_collections -type f
+      register: vendor_find
       when: vendor_stat.stat.exists
+      ignore_errors: true
       
-    - name: Show vendor_collections contents
+    - name: Show vendor_collections files
       debug:
-        var: vendor_ls.stdout_lines
+        var: vendor_find.stdout_lines
       when: vendor_stat.stat.exists
 
     - name: Try ansible-galaxy collection list
@@ -50,4 +56,3 @@
     - name: Display result
       debug:
         msg: "{{ result.message }}"
-
